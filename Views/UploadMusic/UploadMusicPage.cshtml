@@ -1,0 +1,22 @@
+﻿@{
+    ViewBag.Title = "Upload Music Page";
+}
+
+<h2>Upload Music Page</h2>
+
+@using (Html.BeginForm("Index", "UploadMusic", FormMethod.Post))
+{
+    <div class="form-group">
+        @Html.Label("YouTube URL:")
+        @Html.TextBox("youtubeUrl", null, new { @class = "form-control" })
+    </div>
+
+    <button type="submit" class="btn btn-primary">Submit</button>
+}
+
+@if (ViewBag.Message != null)
+{
+    <div class="alert alert-success mt-3">
+        @ViewBag.Message
+    </div>
+}

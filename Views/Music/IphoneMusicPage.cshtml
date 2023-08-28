@@ -1,0 +1,101 @@
+﻿@model MusicViewModel
+
+@{
+    ViewData["Title"] = "Iphone Music Page";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<script>
+    // Media metadata for the current audio track
+    const mediaMetadata = new MediaMetadata({
+        title: "Track Title",
+        artist: "Artist Name",
+        album: "Album Name",
+        artwork: [
+            { src: "/path-to-artwork.jpg", sizes: "96x96", type: "image/jpeg" },
+        ],
+    });
+</script>
+
+<audio controls id="audio-player" mediagroup="audioGroup">
+    <source src="/MusicFiles/@(Model.AudioFiles[Model.CurrentIndex].FileName)" type="audio/aac">
+    Your browser does not support the audio element.
+</audio>
+<br />
+<button id="play-button">Play</button>
+<br />
+<button id="next-button">Next</button>
+<br />
+@Html.ActionLink("Upload Music", "UploadMusicPage", "UploadMusic")
+
+<script>
+    const audio = document.getElementById('audio-player');
+    const playButton = document.getElementById('play-button');
+    const nextButton = document.getElementById('next-button');
+    // Serialize the audioFiles from your Razor model to JSON
+    const serializedAudioFiles = JSON.stringify(@Html.Raw(Json.Serialize(Model.AudioFiles)));
+
+    playButton.addEventListener('click', playAudio);
+
+    console.log('Starting button click event handler');
+    console.log('nextButton:', nextButton);
+    nextButton.addEventListener('click', playNextAudio);
+
+    // Add this code to enable the play button when metadata is loaded
+    audio.addEventListener('loadedmetadata', function () {
+        playButton.disabled = false;
+    });
+
+    // Enable the Media Session API
+    if ('mediaSession' in navigator) {
+        navigator.mediaSession.metadata = mediaMetadata;
+        navigator.mediaSession.setActionHandler('previoustrack', function () {
+            // Handle previous track action here
+            console.log('Previous track button pressed');
+            // Perform actions like loading the previous track and updating metadata
+        });
+        navigator.mediaSession.setActionHandler('nexttrack', function () {
+            // Implement logic to load and play the next track
+            console.log('Next track button pressed');
+            // Load the next track's audio source
+            playNextAudio();
+        });
+    }
+
+    //functions
+    function playAudio() {
+        if (audio.paused) {
+            audio.play();
+        } else {
+            audio.pause();
+        }
+    }
+
+    function playNextAudio() {
+        console.log('Next button clicked');
+        audio.pause();
+
+        // Perform an AJAX request to the server to get the next filename
+        fetch('@Url.Action("GetNextFileName", "Music")' + '?audioFiles=' + encodeURIComponent(serializedAudioFiles))
+            .then(response => response.text())
+            .then(newFileName => {
+                // Update media metadata for the next track
+                mediaMetadata.title = newFileName;
+                mediaMetadata.artist = "";
+                mediaMetadata.album = "";
+                mediaMetadata.artwork = [
+                    { src: "", sizes: "96x96", type: "image/jpeg" },
+                ];
+
+                // Update audio source and play
+                audio.src = '/MusicFiles/' + newFileName;
+                console.log(audio.src);
+                audio.load(); // Use load() to reload the audio element
+                audio.play();
+            })
+            .catch(error => {
+                console.error('Error fetching next file:', error);
+            });
+    }
+</script>

@@ -1,0 +1,57 @@
+﻿@model MusicViewModel
+
+@{
+    ViewData["Title"] = "Music Page";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<audio controls id="audio-player">
+    <source src="/MusicFiles/@(Model.AudioFiles[Model.CurrentIndex].FileName)" type="audio/mpeg">
+    Your browser does not support the audio element.
+</audio>
+<br />
+<button id="play-button">Play</button>
+<br />
+<button id="next-button">Next</button>
+<br />
+@Html.ActionLink("Upload Music", "UploadMusicPage", "Music")
+<br />
+@Html.ActionLink("Iphone Test", "IphoneTestPage", "Music")
+
+<script>
+    const audio = document.getElementById('audio-player');
+
+    const playButton = document.getElementById('play-button');
+
+    playButton.addEventListener('click', () => {
+        if (audio.paused) {
+            audio.play();
+        } else {
+            audio.pause();
+        }
+    });
+
+    const nextButton = document.getElementById('next-button');
+
+    console.log('Starting button click event handler');
+    console.log('nextButton:', nextButton);
+
+    nextButton.addEventListener('click', () => {
+        console.log('Next button clicked');
+        audio.pause();
+
+        // Perform an AJAX request to the server to get the next filename
+        fetch('@Url.Action("GetNextFileName", "Music")')
+            .then(response => response.text())
+            .then(newFileName => {
+                // Update audio source and play
+                audio.src = '/MusicFiles/' + newFileName;
+                console.log(audio.src);
+                audio.play();
+            })
+            .catch(error => {
+                console.error('Error fetching next file:', error);
+            });
+    });
+</script>
