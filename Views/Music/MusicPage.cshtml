@@ -6,8 +6,8 @@
 
 <h2>@ViewData["Title"]</h2>
 
-<audio controls id="audio-player">
-    <source src="/MusicFiles/@(Model.AudioFiles[Model.CurrentIndex].FileName)" type="audio/mpeg">
+<audio controls id="audio-player" mediagroup="audioGroup">
+    <source src="/MusicFiles/@(Model.AudioFiles[Model.CurrentIndex].FileName)" type="audio/aac">
     Your browser does not support the audio element.
 </audio>
 <br />
@@ -15,43 +15,109 @@
 <br />
 <button id="next-button">Next</button>
 <br />
-@Html.ActionLink("Upload Music", "UploadMusicPage", "Music")
+<button id="previous-button">Previous</button>
 <br />
-@Html.ActionLink("Iphone Test", "IphoneTestPage", "Music")
+@Html.ActionLink("Upload Music", "UploadMusicPage", "UploadMusic")
 
 <script>
     const audio = document.getElementById('audio-player');
-
     const playButton = document.getElementById('play-button');
+    const nextButton = document.getElementById('next-button');
+    const previousButton = document.getElementById('previous-button');
 
-    playButton.addEventListener('click', () => {
+    // Deserialize the audioFiles from your Razor model
+    const audioFiles = @Html.Raw(Json.Serialize(Model.AudioFiles));
+
+    let shuffledIndices = shuffleArrayIndices(audioFiles.length);
+    let currentIndex = shuffledIndices.indexOf(@Model.CurrentIndex);
+    let currentShuffleIndex = currentIndex;
+
+    console.log('Initial audio files:', audioFiles);
+    console.log('Initial index:', currentIndex);
+
+    playButton.addEventListener('click', togglePlay);
+    nextButton.addEventListener('click', playNextAudio);
+    previousButton.addEventListener('click', playPreviousAudio);
+
+    if ('mediaSession' in navigator) {
+        updateMediaSessionMetadata(audioFiles[currentIndex]);
+
+        navigator.mediaSession.setActionHandler('previoustrack', function () {
+            playPreviousAudio();
+        });
+        navigator.mediaSession.setActionHandler('nexttrack', function () {
+            playNextAudio();
+        });
+    }
+
+    function togglePlay() {
         if (audio.paused) {
             audio.play();
         } else {
             audio.pause();
         }
-    });
+        updatePlayButtonState();
+    }
 
-    const nextButton = document.getElementById('next-button');
+    function updatePlayButtonState() {
+        if (audio.paused) {
+            playButton.textContent = 'Play';
+        } else {
+            playButton.textContent = 'Pause';
+        }
+    }
 
-    console.log('Starting button click event handler');
-    console.log('nextButton:', nextButton);
+    function playNextAudio() {
+        currentShuffleIndex = (currentShuffleIndex + 1) % shuffledIndices.length;
+        currentIndex = shuffledIndices[currentShuffleIndex];
+        loadAudioFile(currentIndex);
+    }
 
-    nextButton.addEventListener('click', () => {
-        console.log('Next button clicked');
-        audio.pause();
+    function playPreviousAudio() {
+        currentShuffleIndex = (currentShuffleIndex - 1 + shuffledIndices.length) % shuffledIndices.length;
+        currentIndex = shuffledIndices[currentShuffleIndex];
+        loadAudioFile(currentIndex);
+    }
 
-        // Perform an AJAX request to the server to get the next filename
-        fetch('@Url.Action("GetNextFileName", "Music")')
-            .then(response => response.text())
-            .then(newFileName => {
-                // Update audio source and play
-                audio.src = '/MusicFiles/' + newFileName;
-                console.log(audio.src);
+    function loadAudioFile(index) {
+        if (index >= 0 && index < audioFiles.length) {
+            const newFile = audioFiles[index];
+            if (newFile && newFile.fileName) {
+                console.log('Loading file:', newFile.fileName);
+
+                audio.src = '/MusicFiles/' + encodeURIComponent(newFile.fileName);
+                audio.load();
                 audio.play();
-            })
-            .catch(error => {
-                console.error('Error fetching next file:', error);
+
+                updateMediaSessionMetadata(newFile);
+                updatePlayButtonState();
+            } else {
+                console.error('Invalid file at index:', index, newFile);
+            }
+        } else {
+            console.error('Index out of bounds:', index);
+        }
+    }
+
+    function shuffleArrayIndices(length) {
+        let indices = Array.from({ length }, (_, index) => index);
+        for (let i = indices.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [indices[i], indices[j]] = [indices[j], indices[i]];
+        }
+        return indices;
+    }
+
+    function updateMediaSessionMetadata(audioFile) {
+        if ('mediaSession' in navigator) {
+            navigator.mediaSession.metadata = new MediaMetadata({
+                title: audioFile.Title || "Track Title",
+                artist: audioFile.Artist || "Artist Name",
+                album: audioFile.Album || "Album Name",
+                artwork: [
+                    { src: audioFile.ArtworkPath || "/path-to-artwork.jpg", sizes: "96x96", type: "image/jpeg" },
+                ],
             });
-    });
+        }
+    }
 </script>

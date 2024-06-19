@@ -29,7 +29,8 @@ namespace MoreMusic.Controllers
         {
             UploadMusicService uploadMusic = new UploadMusicService(_dbContext, _configuration);
 
-            uploadMusic.Downloader(youtubeUrl);
+            var importDetails = uploadMusic.Uploader(youtubeUrl).Result;
+            uploadMusic.InsertAudioFileToDb(importDetails);
 
             ViewBag.Message = "URL received: " + youtubeUrl;
             return View("UploadMusicPage");

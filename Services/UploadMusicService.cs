@@ -4,6 +4,7 @@ using YoutubeExplode.Videos.Streams;
 using System.Diagnostics;
 using MoreMusic.DataLayer;
 using MoreMusic.Models;
+using System.Threading.Tasks;
 using IConfiguration = Microsoft.Extensions.Configuration.IConfiguration;
 
 namespace MoreMusic.Services
@@ -18,7 +19,7 @@ namespace MoreMusic.Services
             _dbContext = dbContext;
             _configuration = configuration;
         }
-        public async void Downloader(string youtubeUrl)
+        public async Task<newAudioFileImport> Uploader(string youtubeUrl)
         {
             string title, author;
             string audioFilesBasePath = _configuration["AudioFilesBasePath"];
@@ -46,7 +47,7 @@ namespace MoreMusic.Services
                 // Download the stream to a file
                 await youtube.Videos.Streams.DownloadAsync(audioStreamInfo, filePath);
 
-                ConvertToAAC(filePath,audioFilesBasePath);
+                return ConvertToAAC(filePath,audioFilesBasePath);
             }
             catch (Exception ex)
             {
@@ -54,7 +55,7 @@ namespace MoreMusic.Services
             }
         }
 
-        private void ConvertToAAC(string filePath, string basePath)
+        private newAudioFileImport ConvertToAAC(string filePath, string basePath)
         {
             string inputFilePath = filePath;
             string fileName = Path.GetFileName(inputFilePath);
@@ -69,7 +70,7 @@ namespace MoreMusic.Services
                 // Construct the FFmpeg command
                 string command = $"-i \"{inputFilePath}\" \"{outputFilePath}\"";
 
-                ProcessStartInfo psi = new ProcessStartInfo(ffmpegPath)
+                ProcessStartInfo processStartInfo = new ProcessStartInfo(ffmpegPath)
                 {
                     Arguments = command,
                     UseShellExecute = false,
@@ -80,7 +81,7 @@ namespace MoreMusic.Services
 
                 Process process = new Process
                 {
-                    StartInfo = psi,
+                    StartInfo = processStartInfo,
                     EnableRaisingEvents = true,
                 };
 
@@ -106,7 +107,15 @@ namespace MoreMusic.Services
                 process.BeginOutputReadLine();
                 process.WaitForExit();
 
-                InsertAudioFileToDb(outputFileName, basePath);
+                newAudioFileImport importDetails = new newAudioFileImport()
+                {
+                    fileName = outputFileName,
+                    filePath = basePath,
+                    fileType = Path.GetExtension(outputFileName),
+                    serverId = 1
+                };
+
+                return importDetails;
             }
             catch (Exception ex)
             {
@@ -114,27 +123,40 @@ namespace MoreMusic.Services
             }
         }
 
-        private void InsertAudioFileToDb(string fileName, string basePath)
+        public async Task InsertAudioFileToDb(newAudioFileImport importDetails)
         {
             try
             {
                 var audioFiles = _dbContext.audioFiles;
 
                 // Construct the full file path
-                string filePath = Path.Combine(basePath, fileName);
+                string filePath = Path.Combine(importDetails.filePath, importDetails.fileName);
+
                 using (var dbTransaction = _dbContext.Database.BeginTransaction())
                 {
-                    AudioFiles newAudioFiles = new AudioFiles()
+                    try
                     {
-                        FileName = fileName,
-                        FilePath = filePath,
-                        Title = fileName
-                    };
+                        AudioFiles newAudioFiles = new AudioFiles()
+                        {
+                            FileName = importDetails.fileName,
+                            FilePath = filePath,
+                            Title = importDetails.fileName,
+                            FileType = importDetails.fileType,
+                            ServerId = 1
+                        };
 
-                    audioFiles.Add(newAudioFiles);
-                }  
+                        audioFiles.Add(newAudioFiles);
+                        _dbContext.SaveChanges(); // Save changes to the database within the transaction
+                        dbTransaction.Commit();   // Commit the transaction
+                    }
+                    catch (Exception ex)
+                    {
+                        dbTransaction.Rollback(); // Roll back the transaction if an exception occurs
+                        throw;                    // Re-throw the exception
+                    }
+                }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }

@@ -4,6 +4,13 @@ using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Build the configuration using appsettings.json and other configuration sources
+var configuration = new ConfigurationBuilder()
+    .SetBasePath(builder.Environment.ContentRootPath)
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    // Add other configuration sources if needed
+    .Build();
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
@@ -29,9 +36,6 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
-
-
 app.UseRouting();
 app.UseAuthorization();
 
