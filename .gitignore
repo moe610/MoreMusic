@@ -322,3 +322,4 @@ obj/Release/net6.0/staticwebassets/msbuild.buildTransitive.MoreMusic.props
 obj/Release/net6.0/staticwebassets/msbuild.MoreMusic.Microsoft.AspNetCore.StaticWebAssets.props
 Properties/PublishProfiles/FolderProfile.pubxml
 Properties/PublishProfiles/FolderProfile.pubxml.user
+/bin
