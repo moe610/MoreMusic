@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using MoreMusic.DataLayer;
 using Microsoft.Extensions.FileProviders;
 using MoreMusic.Services;
+using Microsoft.AspNetCore.Identity;
+using MoreMusic.DataLayer.Entity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +19,10 @@ builder.Services.AddControllersWithViews();
 // Configure PostgreSQL connection
 builder.Services.AddDbContext<MusicDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")), ServiceLifetime.Scoped);
+
+builder.Services.AddIdentity<SystemUsers, IdentityRole>()
+    .AddEntityFrameworkStores<MusicDbContext>()
+    .AddDefaultTokenProviders();
 
 // Add the Console logger
 builder.Logging.AddConsole();
@@ -41,6 +47,9 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",

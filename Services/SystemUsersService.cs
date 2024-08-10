@@ -18,7 +18,7 @@ namespace MoreMusic.Services
 
         public SystemUsers GetUserByCredentials(string username, string password)
         {
-            return _context.systemUsers.SingleOrDefault(u => u.UserName == username && u.Password == password);
+            return _context.systemUsers.SingleOrDefault(u => u.UserName == username && u.PasswordHash == password);
         }
     }
 }
