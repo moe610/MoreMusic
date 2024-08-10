@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace MoreMusic.Models
+namespace MoreMusic.DataLayer.Entity
 {
     [Table("audio_server")]
     public class AudioServer

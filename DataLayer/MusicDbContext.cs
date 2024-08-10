@@ -1,11 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using MoreMusic.Models;
+using MoreMusic.DataLayer.Entity;
 
 namespace MoreMusic.DataLayer
 {
     public class MusicDbContext : DbContext
     {
         public DbSet<AudioFiles> audioFiles { get; set; }
+        public DbSet<SystemUsers> systemUsers { get; set; }
         public DbSet<AudioServer> audioServer { get; set; }
         private readonly ILogger<MusicDbContext> _logger;
 

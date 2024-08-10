@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using MoreMusic.DataLayer;
 using Microsoft.Extensions.FileProviders;
+using MoreMusic.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,7 +9,6 @@ var builder = WebApplication.CreateBuilder(args);
 var configuration = new ConfigurationBuilder()
     .SetBasePath(builder.Environment.ContentRootPath)
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-    // Add other configuration sources if needed
     .Build();
 
 // Add services to the container.
@@ -20,6 +20,9 @@ builder.Services.AddDbContext<MusicDbContext>(options =>
 
 // Add the Console logger
 builder.Logging.AddConsole();
+
+// Add user service
+builder.Services.AddTransient<ISystemUserService, SystemUsersService>();
 
 // Get the AudioFilesBasePath from configuration
 string audioFilesBasePath = builder.Configuration.GetSection("AudioFilesBasePath").Value;
@@ -36,23 +39,12 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
 app.UseRouting();
-app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
-
-app.MapControllerRoute(
-    name: "MusicPage",
-    pattern: "Music/MusicPage",
-    defaults: new { controller = "Music", action = "MusicPage" }
-);
-app.MapControllerRoute(
-    name: "UploadMusicPage",
-    pattern: "UploadMusic/UploadMusicPage",
-    defaults: new { controller = "UploadMusic", action = "UploadMusicPage" }
-);
 
 // Serve static files from the path specified in the appsettings with the URL path "/MusicFiles/"
 app.UseStaticFiles(new StaticFileOptions

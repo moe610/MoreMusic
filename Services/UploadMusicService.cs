@@ -4,8 +4,8 @@ using YoutubeExplode.Videos.Streams;
 using System.Diagnostics;
 using MoreMusic.DataLayer;
 using MoreMusic.Models;
-using System.Threading.Tasks;
 using IConfiguration = Microsoft.Extensions.Configuration.IConfiguration;
+using MoreMusic.DataLayer.Entity;
 
 namespace MoreMusic.Services
 {
@@ -19,7 +19,7 @@ namespace MoreMusic.Services
             _dbContext = dbContext;
             _configuration = configuration;
         }
-        public async Task<newAudioFileImport> Uploader(string youtubeUrl)
+        public async Task<NewAudioFileImportModel> Uploader(string youtubeUrl)
         {
             string title, author;
             string audioFilesBasePath = _configuration["AudioFilesBasePath"];
@@ -55,7 +55,7 @@ namespace MoreMusic.Services
             }
         }
 
-        private newAudioFileImport ConvertToAAC(string filePath, string basePath)
+        private NewAudioFileImportModel ConvertToAAC(string filePath, string basePath)
         {
             string inputFilePath = filePath;
             string fileName = Path.GetFileName(inputFilePath);
@@ -107,7 +107,7 @@ namespace MoreMusic.Services
                 process.BeginOutputReadLine();
                 process.WaitForExit();
 
-                newAudioFileImport importDetails = new newAudioFileImport()
+                NewAudioFileImportModel importDetails = new NewAudioFileImportModel()
                 {
                     fileName = outputFileName,
                     filePath = basePath,
@@ -123,7 +123,7 @@ namespace MoreMusic.Services
             }
         }
 
-        public async Task InsertAudioFileToDb(newAudioFileImport importDetails)
+        public async Task InsertAudioFileToDb(NewAudioFileImportModel importDetails)
         {
             try
             {

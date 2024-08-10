@@ -1,4 +1,6 @@
-﻿namespace MoreMusic.Models
+﻿using MoreMusic.DataLayer.Entity;
+
+namespace MoreMusic.Models
 {
     public class MusicViewModel
     {

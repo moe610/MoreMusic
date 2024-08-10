@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MoreMusic.DataLayer;
+using MoreMusic.DataLayer.Entity;
 using MoreMusic.Models;
 
 namespace MoreMusic.Controllers

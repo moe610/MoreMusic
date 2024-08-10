@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace MoreMusic.Models
+namespace MoreMusic.DataLayer.Entity
 {
     [Table("audio_files")]
     public class AudioFiles
@@ -10,10 +10,10 @@ namespace MoreMusic.Models
         [Column("file_id")]
         public int Id { get; set; }
 
-        [Column("file_name")] 
+        [Column("file_name")]
         public string FileName { get; set; }
 
-        [Column("file_path")] 
+        [Column("file_path")]
         public string FilePath { get; set; }
 
         [Column("file_type")]
