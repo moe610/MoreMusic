@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using MoreMusic.DataLayer;
 using MoreMusic.Services;
 
 namespace MoreMusic.Controllers
 {
+    [Authorize]
     public class UploadMusicController : Controller
     {
         private readonly ILogger<MusicController> _logger;

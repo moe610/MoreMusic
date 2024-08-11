@@ -3,7 +3,10 @@ using MoreMusic.DataLayer;
 using Microsoft.Extensions.FileProviders;
 using MoreMusic.Services;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
 using MoreMusic.DataLayer.Entity;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,20 +18,44 @@ var configuration = new ConfigurationBuilder()
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<AuthService>();
 
 // Configure PostgreSQL connection
 builder.Services.AddDbContext<MusicDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")), ServiceLifetime.Scoped);
 
+// Configure JWT authentication
+var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+var secretKey = jwtSettings.GetValue<string>("Secret");
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtSettings.GetValue<string>("Issuer"),
+        ValidAudience = jwtSettings.GetValue<string>("Audience"),
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
+        ClockSkew = TimeSpan.Zero
+    };
+});
+
 builder.Services.AddIdentity<SystemUsers, IdentityRole>()
     .AddEntityFrameworkStores<MusicDbContext>()
     .AddDefaultTokenProviders();
 
+builder.Services.AddAuthorization();
+
 // Add the Console logger
 builder.Logging.AddConsole();
-
-// Add user service
-builder.Services.AddTransient<ISystemUserService, SystemUsersService>();
 
 // Get the AudioFilesBasePath from configuration
 string audioFilesBasePath = builder.Configuration.GetSection("AudioFilesBasePath").Value;

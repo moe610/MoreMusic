@@ -15,13 +15,13 @@ namespace MoreMusic.DataLayer.Entity
         public override string UserName { get; set; } // Use the overridden property from IdentityUser
 
         [Column("normalized_user_name")]
-        public string NormalizedUserName { get; set; }
+        public override string? NormalizedUserName { get; set; }
 
         [Column("email_address")]
         public override string Email { get; set; } // Use the overridden property from IdentityUser
 
         [Column("normalized_email_address")]
-        public string NormalizedEmail { get; set; }
+        public override string? NormalizedEmail { get; set; }
 
         [Column("email_confirmed")]
         public bool EmailConfirmed { get; set; }
@@ -30,13 +30,13 @@ namespace MoreMusic.DataLayer.Entity
         public override string PasswordHash { get; set; } // Use the overridden property from IdentityUser
 
         [Column("security_stamp")]
-        public string SecurityStamp { get; set; }
+        public string? SecurityStamp { get; set; }
 
         [Column("concurrency_stamp")]
-        public string ConcurrencyStamp { get; set; }
+        public override string ConcurrencyStamp { get; set; } = Guid.NewGuid().ToString();
 
         [Column("phone_number")]
-        public override string PhoneNumber { get; set; } // Use the overridden property from IdentityUser
+        public override string? PhoneNumber { get; set; } // Use the overridden property from IdentityUser
 
         [Column("phone_number_confirmed")]
         public bool PhoneNumberConfirmed { get; set; }
@@ -51,7 +51,7 @@ namespace MoreMusic.DataLayer.Entity
         public bool LockoutEnabled { get; set; }
 
         [Column("access_failed_count")]
-        public int AccessFailedCount { get; set; }
+        public int? AccessFailedCount { get; set; }
 
         [Column("created_at")]
         public DateTime CreatedAt { get; set; }

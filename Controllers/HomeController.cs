@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using MoreMusic.Models;
 using System.Diagnostics;
 
 namespace MoreMusic.Controllers
 {
+    [Authorize]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
@@ -18,6 +20,7 @@ namespace MoreMusic.Controllers
             return View();
         }
 
+        [Authorize] // Protecting the Privacy page
         public IActionResult Privacy()
         {
             return View();

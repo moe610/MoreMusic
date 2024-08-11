@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using MoreMusic.DataLayer;
 using MoreMusic.DataLayer.Entity;
 using MoreMusic.Models;
 
 namespace MoreMusic.Controllers
 {
+    [Authorize]
     public class MusicController : Controller
     {
         private readonly ILogger<MusicController> _logger;
