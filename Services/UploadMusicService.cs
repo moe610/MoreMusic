@@ -6,6 +6,7 @@ using MoreMusic.DataLayer;
 using MoreMusic.Models;
 using IConfiguration = Microsoft.Extensions.Configuration.IConfiguration;
 using MoreMusic.DataLayer.Entity;
+using Microsoft.EntityFrameworkCore;
 
 namespace MoreMusic.Services
 {
@@ -29,7 +30,7 @@ namespace MoreMusic.Services
             {
                 // You can specify either video ID or URL
                 var video = await youtube.Videos.GetAsync(youtubeUrl);
-                title = video.Title; // "Collections - Blender 2.80 Fundamentals"
+                title = video.Title;
                 if (!title.Contains('-'))
                     title = Regex.Replace(title, @"[^0-9a-zA-Z]+", " ");
                 else
@@ -44,7 +45,6 @@ namespace MoreMusic.Services
                 var filePath = @$"{audioFilesBasePath}{ title}.mp3";
                 var streamManifest = await youtube.Videos.Streams.GetManifestAsync(youtubeUrl);
                 var audioStreamInfo = streamManifest.GetAudioOnlyStreams().GetWithHighestBitrate();
-                // Download the stream to a file
                 await youtube.Videos.Streams.DownloadAsync(audioStreamInfo, filePath);
 
                 return ConvertToAAC(filePath,audioFilesBasePath);
@@ -60,14 +60,12 @@ namespace MoreMusic.Services
             string inputFilePath = filePath;
             string fileName = Path.GetFileName(inputFilePath);
 
-            string outputFileName = Path.ChangeExtension(fileName, ".aac"); // Change the extension to .aac
-            string outputFilePath = Path.Combine(@$"{basePath}", outputFileName); // Construct the output file path
+            string outputFileName = Path.ChangeExtension(fileName, ".aac");
+            string outputFilePath = Path.Combine(@$"{basePath}", outputFileName);
 
             try
             {
-                // Ensure FFmpeg executable path is set correctly
                 string ffmpegPath = @"C:\PATH_Programs\ffmpeg-6.0-full_build\bin\ffmpeg.exe";
-                // Construct the FFmpeg command
                 string command = $"-i \"{inputFilePath}\" \"{outputFilePath}\"";
 
                 ProcessStartInfo processStartInfo = new ProcessStartInfo(ffmpegPath)
@@ -111,7 +109,7 @@ namespace MoreMusic.Services
                 {
                     fileName = outputFileName,
                     filePath = basePath,
-                    fileType = Path.GetExtension(outputFileName),
+                    fileType = Path.GetExtension(outputFileName).TrimStart('.'),
                     serverId = 1
                 };
 
@@ -129,7 +127,6 @@ namespace MoreMusic.Services
             {
                 var audioFiles = _dbContext.AudioFiles;
 
-                // Construct the full file path
                 string filePath = Path.Combine(importDetails.filePath, importDetails.fileName);
 
                 using (var dbTransaction = _dbContext.Database.BeginTransaction())
@@ -146,13 +143,13 @@ namespace MoreMusic.Services
                         };
 
                         audioFiles.Add(newAudioFiles);
-                        _dbContext.SaveChanges(); // Save changes to the database within the transaction
-                        dbTransaction.Commit();   // Commit the transaction
+                        _dbContext.SaveChanges();
+                        dbTransaction.Commit();
                     }
                     catch (Exception ex)
                     {
-                        dbTransaction.Rollback(); // Roll back the transaction if an exception occurs
-                        throw;                    // Re-throw the exception
+                        dbTransaction.Rollback();     
+                        throw new Exception(ex.Message);          
                     }
                 }
             }

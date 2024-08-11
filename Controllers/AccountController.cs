@@ -11,14 +11,12 @@ namespace MoreMusic.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ILogger<AccountController> _logger;
-        private readonly MusicDbContext _musicDbContext;
 
-        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, ILogger<AccountController> logger, MusicDbContext musicDbContext)
+        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, ILogger<AccountController> logger)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _logger = logger;
-            _musicDbContext = musicDbContext;
         }
 
         [HttpGet]
@@ -36,17 +34,7 @@ namespace MoreMusic.Controllers
                 var result = await _userManager.CreateAsync(user, model.Password);
 
                 if (result.Succeeded)
-                {
-                    // Check if the user was created with a ConcurrencyStamp
-                    var createdUser = await _userManager.FindByNameAsync(user.UserName);
-                    if (createdUser != null)
-                    {
-                        // Optionally, log or debug the ConcurrencyStamp value
-                        Console.WriteLine($"ConcurrencyStamp: {createdUser.ConcurrencyStamp}");
-                    }
-
                     return RedirectToAction("Index", "Home");
-                }
 
                 foreach (var error in result.Errors)
                 {
