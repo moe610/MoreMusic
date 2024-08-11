@@ -127,7 +127,7 @@ namespace MoreMusic.Services
         {
             try
             {
-                var audioFiles = _dbContext.audioFiles;
+                var audioFiles = _dbContext.AudioFiles;
 
                 // Construct the full file path
                 string filePath = Path.Combine(importDetails.filePath, importDetails.fileName);

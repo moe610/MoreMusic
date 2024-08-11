@@ -9,11 +9,11 @@ namespace MoreMusic.Controllers
 {
     public class AuthController : Controller
     {
-        private readonly UserManager<SystemUsers> _userManager;
-        private readonly SignInManager<SystemUsers> _signInManager;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly AuthService _authService;
 
-        public AuthController(UserManager<SystemUsers> userManager, SignInManager<SystemUsers> signInManager, AuthService authService)
+        public AuthController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, AuthService authService)
         {
             _userManager = userManager;
             _signInManager = signInManager;

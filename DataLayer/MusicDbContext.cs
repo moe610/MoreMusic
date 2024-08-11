@@ -1,13 +1,16 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using MoreMusic.DataLayer.Entity;
 
 namespace MoreMusic.DataLayer
 {
-    public class MusicDbContext : DbContext
+    public class MusicDbContext : IdentityDbContext<ApplicationUser>
     {
-        public DbSet<AudioFiles> audioFiles { get; set; }
-        public DbSet<SystemUsers> systemUsers { get; set; }
-        public DbSet<AudioServer> audioServer { get; set; }
+        public DbSet<AudioFiles> AudioFiles { get; set; }
+        public DbSet<ApplicationUser> SystemUsers { get; set; }
+        public DbSet<AudioServer> AudioServer { get; set; }
+
         private readonly ILogger<MusicDbContext> _logger;
 
         public MusicDbContext(DbContextOptions<MusicDbContext> options, ILogger<MusicDbContext> logger)

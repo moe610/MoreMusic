@@ -8,12 +8,12 @@ namespace MoreMusic.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly UserManager<SystemUsers> _userManager;
-        private readonly SignInManager<SystemUsers> _signInManager;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ILogger<AccountController> _logger;
         private readonly MusicDbContext _musicDbContext;
 
-        public AccountController(UserManager<SystemUsers> userManager, SignInManager<SystemUsers> signInManager, ILogger<AccountController> logger, MusicDbContext musicDbContext)
+        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, ILogger<AccountController> logger, MusicDbContext musicDbContext)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -32,7 +32,7 @@ namespace MoreMusic.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = new SystemUsers { UserName = model.UserName, Email = model.Email };
+                var user = new ApplicationUser { UserName = model.UserName, Email = model.Email };
                 var result = await _userManager.CreateAsync(user, model.Password);
 
                 if (result.Succeeded)
@@ -75,32 +75,23 @@ namespace MoreMusic.Controllers
                     return View(model);
                 }
 
-
                 var result = await _signInManager.PasswordSignInAsync(model.UserName, model.Password, isPersistent: false, lockoutOnFailure: false);
 
                 if (result.Succeeded)
                     return RedirectToAction("Index","Home");
 
-                if (result.IsLockedOut)
-                {
-                    _logger.LogWarning("User account locked out.");
-                    return RedirectToAction("Lockout");
-                }
-                else if (result.IsNotAllowed)
-                {
-                    _logger.LogWarning("User is not allowed to sign in.");
-                    return RedirectToAction("NotAllowed");
-                }
-                else if (result.RequiresTwoFactor)
-                {
-                    _logger.LogWarning("Two-factor authentication required.");
-                    return RedirectToAction("TwoFactorAuthentication");
-                }
-
                 ModelState.AddModelError(string.Empty, "Invalid login attempt.");
             }
 
             return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Logout()
+        {
+            await _signInManager.SignOutAsync();
+            return RedirectToAction("Index", "Home");
         }
     }
 }

@@ -48,7 +48,7 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-builder.Services.AddIdentity<SystemUsers, IdentityRole>()
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<MusicDbContext>()
     .AddDefaultTokenProviders();
 

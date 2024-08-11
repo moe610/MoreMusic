@@ -19,7 +19,7 @@ namespace MoreMusic.Controllers
         {
             _logger = logger;
             _dbContext = dbContext;
-            _audioFiles = dbContext.audioFiles.ToList();
+            _audioFiles = dbContext.AudioFiles.ToList();
             _currentIndex = 0;
 
             //TODO

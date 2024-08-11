@@ -4,8 +4,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MoreMusic.DataLayer.Entity
 {
-    [Table("system_users")]
-    public class SystemUsers : IdentityUser
+    [Table("AspNetUsers")]
+    public class ApplicationUser : IdentityUser
     {
         [Key]
         [Column("id")]

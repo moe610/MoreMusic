@@ -9,16 +9,16 @@ namespace MoreMusic.Services
 {
     public class AuthService
     {
-        private readonly UserManager<SystemUsers> _userManager;
+        private readonly UserManager<ApplicationUser> _userManager;
         private readonly IConfiguration _configuration;
 
-        public AuthService(UserManager<SystemUsers> userManager, IConfiguration configuration)
+        public AuthService(UserManager<ApplicationUser> userManager, IConfiguration configuration)
         {
             _userManager = userManager;
             _configuration = configuration;
         }
 
-        public async Task<string> GenerateJwtToken(SystemUsers user)
+        public async Task<string> GenerateJwtToken(ApplicationUser user)
         {
             var jwtSettings = _configuration.GetSection("JwtSettings");
             var secretKey = jwtSettings.GetValue<string>("Secret");
